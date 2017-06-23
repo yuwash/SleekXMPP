@@ -57,6 +57,7 @@ class XEP_0027(BasePlugin):
 
         self.xmpp.add_filter('out', self._sign_presence)
 
+        self.always_trust = False
         self._keyids = {}
 
         self.api.register(self._set_keyid, 'set_keyid', default=True)
@@ -104,7 +105,7 @@ class XEP_0027(BasePlugin):
     def encrypt(self, data, jid=None):
         keyid = self.get_keyid(jid)
         if keyid:
-            enc = self.gpg.encrypt(data, keyid)
+            enc = self.gpg.encrypt(data, keyid, always_trust=self.always_trust)
             return _extract_data(enc.data, 'MESSAGE')
 
     def decrypt(self, data, jid=None):
@@ -112,7 +113,7 @@ class XEP_0027(BasePlugin):
                    '\n' + \
                    '%s\n' + \
                    '-----END PGP MESSAGE-----\n'
-        dec = self.gpg.decrypt(template % data)
+        dec = self.gpg.decrypt(template % data, always_trust=self.always_trust)
         return dec.data
 
     def verify(self, data, sig, jid=None):
