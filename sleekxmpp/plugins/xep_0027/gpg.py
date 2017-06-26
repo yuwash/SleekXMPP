@@ -20,16 +20,19 @@ def _extract_data(data, kind):
     stripped = []
     begin_headers = False
     begin_data = False
-    kind = kind.encode()
-    for line in data.split(b'\n'):
-        if not begin_headers and b'BEGIN PGP %s' % kind in line:
+    if isinstance(data, bytes):
+        data = data.decode()
+    if isinstance(kind, bytes):
+        kind = kind.decode()
+    for line in data.split('\n'):
+        if not begin_headers and 'BEGIN PGP %s' % kind in line:
             begin_headers = True
             continue
-        if begin_headers and line.strip() == b'':
+        if begin_headers and line.strip() == '':
             begin_data = True
             continue
-        if b'END PGP %s' % kind in line:
-            return b'\n'.join(stripped).decode()
+        if 'END PGP %s' % kind in line:
+            return '\n'.join(stripped)
         if begin_data:
             stripped.append(line)
     return ''
